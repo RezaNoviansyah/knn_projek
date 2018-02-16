@@ -209,10 +209,25 @@ class HasilKNNController extends Controller
             array_push($fwi_latih, $value_latih->fwi_latih);
         }
 
+        $euclidean = new Euclidean();
+        $classifier_fwi = new KNearestNeighbors($k, new Euclidean());
 
-        for ($i=0; $i < 20; $i++) { 
-            for ($j=0; $j < 5 ; $j++) { 
-                echo $i;
+        for ($i=0; $i < $jumlah_data_latih; $i++) { 
+            for ($j=0; $j < $jumlah_data_uji ; $j++) { 
+                $array_uji=[[$suhu_uji[$j], $kelembapan_uji[$j], $hujan_uji[$j], $angin_uji[$j]]];
+                $array_latih=[[$suhu_latih[$i],$kelembapan_latih[$i],$hujan_latih[$i],$angin_latih[$i]]];
+
+                // Normalisasi Data Uji
+                $normalizer_data_uji = new Normalizer();
+                $normalizer_data_uji->fit($array_uji);
+                $normalizer_data_uji->transform($array_uji);
+                
+                // Normalisasi Data Latih
+                $normalizer_data_latih = new Normalizer();
+                $normalizer_data_latih->fit($array_latih);
+                $normalizer_data_latih->transform($array_latih);
+                
+                print_r($array_latih);
             }
         }
 
