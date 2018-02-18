@@ -126,6 +126,7 @@ class HasilKNNController extends Controller
             $a=$array_uji[0];
             $b=$array_latih[0];
             $nilai_euclidean = $euclidean->distance($a, $b);
+            //print_r($b);
 
             if ($ada_hitung==0) {
                
@@ -142,6 +143,7 @@ class HasilKNNController extends Controller
                 'normal_hujan_latih'        => $array_latih[0][2],
                 'normal_angin_latih'        => $array_latih[0][3],
                 'jarak'                     => $nilai_euclidean,
+                'nilai_k'                   => $k,
                 'label_fwi'                 => $fwi_latih[$i]
                 ]);      
  
@@ -166,6 +168,7 @@ class HasilKNNController extends Controller
         if ($id_hasil==0) {
             return redirect('data_uji')->with('warning', 'Data telah diuji');
         }
+        
     }
 
     public function uji_semua(){
@@ -180,14 +183,16 @@ class HasilKNNController extends Controller
         $jumlah_data_latih = DB::table('data_latih')->count();
 
         $ada_hasil = DB::table('hasil_knn')->where('nilai_k','=',$k)->count();
+        $ada_hitung = DB::table('hitung_log')->where('nilai_k','=',$k)->count();
 
-
+        $id_uji=[];
         $suhu_uji=[];
         $kelembapan_uji=[];
         $hujan_uji =[];
         $angin_uji=[];
         $fwi_uji=[];
         foreach ($data_uji as $value_uji) {
+            array_push($id_uji, $value_uji->id_uji);
             array_push($suhu_uji, $value_uji->suhu_uji);
             array_push($kelembapan_uji, $value_uji->kelembapan_uji);
             array_push($hujan_uji, $value_uji->hujan_uji);
@@ -226,8 +231,34 @@ class HasilKNNController extends Controller
                 $normalizer_data_latih = new Normalizer();
                 $normalizer_data_latih->fit($array_latih);
                 $normalizer_data_latih->transform($array_latih);
+
+                $a=$array_uji[0];
+                $b=$array_latih[0];
+                $nilai_euclidean = $euclidean->distance($a, $b);
                 
-                print_r($array_latih);
+                if ($ada_hitung==0) {
+               
+                // Simpan Ke DATABASE tabel hitung_log
+                DB::table('hitung_log')->insert([   
+                    'id_latih'                  => $id_latih[$i],
+                    'id_uji'                    => $id_uji[$j],
+                    'normal_suhu_uji'           => $array_uji[0][0],
+                    'normal_kelembapan_uji'     => $array_uji[0][1],
+                    'normal_hujan_uji'          => $array_uji[0][2],
+                    'normal_angin_uji'          => $array_uji[0][3],
+                    'normal_suhu_latih'         => $array_latih[0][0],
+                    'normal_kelembapan_latih'   => $array_latih[0][1],
+                    'normal_hujan_latih'        => $array_latih[0][2],
+                    'normal_angin_latih'        => $array_latih[0][3],
+                    'jarak'                     => $nilai_euclidean,
+                    'nilai_k'                   => $k,
+                    'label_fwi'                 => $fwi_latih[$i]
+                    ]);      
+     
+                }
+
+                //echo $nilai_euclidean."<br>";
+
             }
         }
 
