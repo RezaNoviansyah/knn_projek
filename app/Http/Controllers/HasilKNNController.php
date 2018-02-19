@@ -232,6 +232,21 @@ class HasilKNNController extends Controller
                 $normalizer_data_latih->fit($array_latih);
                 $normalizer_data_latih->transform($array_latih);
 
+                // Hitung Nilai FWI dengan Metode KNN
+                // Ambil Nilai data Latih FWI
+                $samples_fwi =[[$suhu_latih[$i],$kelembapan_latih[$i],$hujan_latih[$i],$angin_latih[$i]]];
+                $labels_fwi =[$fwi_latih[$i]];
+
+                // Normalisasi Label FWI
+                $normalizer_fwi_latih = new Normalizer();
+                $normalizer_fwi_latih->fit($samples_fwi);
+                $normalizer_fwi_latih->transform($samples_fwi);
+        
+                // Hitung Data FWI
+                $classifier_fwi->train($samples_fwi, $labels_fwi);   
+                $nilai_fwi = $classifier_fwi->predict($array_uji[0]);
+
+                // Rumus Nilai Jarak Dengan Euclidean
                 $a=$array_uji[0];
                 $b=$array_latih[0];
                 $nilai_euclidean = $euclidean->distance($a, $b);
@@ -261,6 +276,23 @@ class HasilKNNController extends Controller
 
             }
         }
+
+        for ($h=0; $h < $jumlah_data_uji; $h++) { 
+            if ($ada_hasil==0) {
+                //Simpan Ke DATABASE tabel hasil_knn
+                    DB::table('hasil_knn')->insert([
+                        'id_uji'        => $id_uji[$h],
+                        'nilai_k'       => $k,
+                        'label_fwi'     => $nilai_fwi
+                        ]);
+                }else{
+                    return redirect('data_uji')->with('warning', 'Data telah diuji dengan nilai K yang sama silahkan ke Menu Hasil KNN');
+                }
+        }
+
+        
+            
+     
 
         //echo $k;
 
