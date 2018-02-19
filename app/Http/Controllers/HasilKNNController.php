@@ -218,6 +218,7 @@ class HasilKNNController extends Controller
         $classifier_fwi = new KNearestNeighbors($k, new Euclidean());
 
         for ($i=0; $i < $jumlah_data_latih; $i++) { 
+            $listInsert = [];
             for ($j=0; $j < $jumlah_data_uji ; $j++) { 
                 $array_uji=[[$suhu_uji[$j], $kelembapan_uji[$j], $hujan_uji[$j], $angin_uji[$j]]];
                 $array_latih=[[$suhu_latih[$i],$kelembapan_latih[$i],$hujan_latih[$i],$angin_latih[$i]]];
@@ -253,8 +254,7 @@ class HasilKNNController extends Controller
                 
                 if ($ada_hitung==0) {
                
-                // Simpan Ke DATABASE tabel hitung_log
-                DB::table('hitung_log')->insert([   
+                array_push($listInsert,[   
                     'id_latih'                  => $id_latih[$i],
                     'id_uji'                    => $id_uji[$j],
                     'normal_suhu_uji'           => $array_uji[0][0],
@@ -273,26 +273,12 @@ class HasilKNNController extends Controller
                 }
 
                 //echo $nilai_euclidean."<br>";
-
             }
-        }
 
-        for ($h=0; $h < $jumlah_data_uji; $h++) { 
-            if ($ada_hasil==0) {
-                //Simpan Ke DATABASE tabel hasil_knn
-                    DB::table('hasil_knn')->insert([
-                        'id_uji'        => $id_uji[$h],
-                        'nilai_k'       => $k,
-                        'label_fwi'     => $nilai_fwi
-                        ]);
-                }else{
-                    return redirect('data_uji')->with('warning', 'Data telah diuji dengan nilai K yang sama silahkan ke Menu Hasil KNN');
-                }
-        }
+            // Simpan Ke DATABASE tabel hitung_log
++            DB::table('hitung_log')->insert($listInsert); 
 
-        
-            
-     
+        }     
 
         //echo $k;
 
